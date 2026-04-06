@@ -1,3 +1,4 @@
+<img width="1280" height="720" alt="Red and Black Retro Landscape YouTube Thumbnail background" src="https://github.com/user-attachments/assets/e5a8792d-7f24-4d4b-9f4b-beb0b3a4843a" />
 # 🗄️ Pocket Balance Inc
 **A minimalist, local-first personal finance tracker and milestone engine.**
 
