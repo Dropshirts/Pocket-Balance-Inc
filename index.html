@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POCKET / VAULT ULTIMATE v4</title>
+    <style>
+        :root {
+            --background: #ffffff; --foreground: #0a0a0a; --border: #e5e5e5;
+            --primary: #171717; --primary-foreground: #fafafa;
+            --muted: #f5f5f5; --muted-foreground: #737373;
+            --radius: 0.625rem; --font-mono: ui-monospace, SFMono-Regular, 'Courier New', monospace;
+        }
+        .dark {
+            --background: #0a0a0a; --foreground: #fafafa; --border: #262626;
+            --primary: #fafafa; --primary-foreground: #0a0a0a;
+            --muted: #171717; --muted-foreground: #a1a1a1;
+        }
+        * { box-sizing: border-box; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+        body { background-color: var(--background); color: var(--foreground); font-family: var(--font-mono); margin: 0; display: flex; justify-content: center; min-height: 100vh; text-transform: uppercase; }
+        #app-container { width: 100%; max-width: 420px; padding: 20px 24px 100px 24px; }
+        .hidden { display: none !important; }
+
+        input, select { background: var(--muted); color: var(--foreground); border: 1px solid var(--border); padding: 16px; border-radius: var(--radius); font-family: inherit; width: 100%; margin-bottom: 12px; outline: none; }
+        button { background: var(--primary); color: var(--primary-foreground); border: none; padding: 16px; border-radius: var(--radius); font-family: inherit; font-weight: bold; cursor: pointer; width: 100%; }
+        
+        /* NAVIGATION */
+        nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 420px; background: var(--background); border-top: 1px solid var(--border); display: flex; padding: 15px; gap: 8px; z-index: 100; align-items: center; }
+        nav button { flex: 1; padding: 10px; font-size: 0.6rem; background: var(--muted); color: var(--foreground); }
+        nav button.active { background: var(--primary); color: var(--primary-foreground); }
+
+        /* THEME SLIDER */
+        .switch { width: 44px; height: 22px; background: var(--muted); border: 1px solid var(--border); border-radius: 20px; position: relative; cursor: pointer; flex-shrink: 0; margin-left: 5px; }
+        .slider { position: absolute; width: 16px; height: 16px; background: var(--primary); border-radius: 50%; top: 2px; left: 2px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .dark .slider { transform: translateX(22px); }
+
+        /* MILESTONE PROGRESS BAR */
+        .progress-container { width: 100%; height: 12px; background: var(--muted); border-radius: 20px; margin: 15px 0; overflow: hidden; border: 1px solid var(--border); }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.8s ease; }
+        
+        .milestone-card { background: var(--muted); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 20px; position: relative; }
+        .status-tag { font-size: 0.5rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; position: absolute; top: 15px; right: 15px; }
+
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .balance-amount { font-size: 3rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -1px; }
+        .log-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.7rem; }
+    </style>
+</head>
+<body class="dark">
+
+<div id="app-container">
+    <div id="auth-gate">
+        <div id="login-box" class="hidden" style="height: 80vh; display: flex; flex-direction: column; justify-content: center;">
+            <h2>ACCESS_VAULT</h2>
+            <input type="text" id="log-user" placeholder="USERNAME">
+            <input type="password" id="log-pass" placeholder="PASSWORD">
+            <button onclick="login()">UNLOCK</button>
+            <p onclick="toggleAuth(true)" style="font-size:0.5rem; text-align:center; cursor:pointer; margin-top:20px; opacity:0.6;">NEW USER? INITIALIZE</p>
+        </div>
+        <div id="signup-box" class="hidden" style="height: 80vh; display: flex; flex-direction: column; justify-content: center;">
+            <h2>INITIALIZE_VAULT</h2>
+            <input type="text" id="reg-user" placeholder="USERNAME">
+            <input type="password" id="reg-pass" placeholder="PASSWORD">
+            <button onclick="register()">CREATE ACCOUNT</button>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden">
+        <div id="page-vault" class="page">
+            <div class="page-header"><div>Pocket Balance Inc</div><button onclick="logout()" style="width:auto; padding:5px 10px; font-size:0.6rem;">LOGOUT</button></div>
+            <div style="font-size:0.6rem; color:var(--muted-foreground)">BALANCE</div>
+            <div class="balance-amount">৳<span id="bal-val">0.00</span></div>
+            <input type="number" id="tx-amt" placeholder="0.00"><input type="text" id="tx-desc" placeholder="NOTE">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><button onclick="process('add')">Balance (+)</button><button onclick="process('sub')" style="background:var(--muted); color:var(--foreground); border:1px solid var(--border);">Balance (-)</button></div>
+            <div id="ledger" style="margin-top:20px;"></div>
+        </div>
+
+        <div id="page-milestones" class="page hidden">
+            <div class="page-header"><div>MILESTONES</div></div>
+            <div id="milestone-setup" class="hidden">
+                <input type="text" id="ms-name" placeholder="GOAL NAME">
+                <input type="number" id="ms-target" placeholder="TARGET AMOUNT (৳)">
+                <button onclick="createMilestone()">SET NEW GOAL</button>
+            </div>
+            <div id="milestone-display"></div>
+        </div>
+
+        <div id="page-extras" class="page hidden">
+            <div class="page-header"><div>EXTRA MEMO</div></div>
+            <input type="text" id="extra-msg" placeholder="MESSAGE"><select id="extra-status"><option value="INCOMING">INCOMING</option><option value="DONE">DONE</option></select>
+            <button onclick="addExtra()">SAVE MEMO</button>
+            <div id="extras-list" style="margin-top:20px;"></div>
+        </div>
+
+        <nav>
+            <button id="nav-vault" class="active" onclick="showPage('vault')">VAULT</button>
+            <button id="nav-milestones" onclick="showPage('milestones')">GOALS</button>
+            <button id="nav-extras" onclick="showPage('extras')">MEMO</button>
+            <div class="switch" onclick="toggleTheme()"><div class="slider"></div></div>
+        </nav>
+    </div>
+</div>
+
+<script>
+    let user = null; let balance = 0; let logs = []; let extras = []; let milestone = null;
+
+    window.onload = () => {
+        const session = localStorage.getItem('active_session');
+        if (session) { user = session; startApp(); }
+        else if (!localStorage.getItem('v_user')) toggleAuth(true);
+        else toggleAuth(false);
+        if(localStorage.getItem('theme') === 'light') document.body.classList.remove('dark');
+    };
+
+    function toggleAuth(isSignUp) {
+        document.getElementById('signup-box').classList.toggle('hidden', !isSignUp);
+        document.getElementById('login-box').classList.toggle('hidden', isSignUp);
+    }
+
+    function register() {
+        const u = document.getElementById('reg-user').value.toUpperCase();
+        const p = document.getElementById('reg-pass').value;
+        if(u && p) { localStorage.setItem('v_user', u); localStorage.setItem('v_pass', p); location.reload(); }
+    }
+
+    function login() {
+        const u = document.getElementById('log-user').value.toUpperCase();
+        const p = document.getElementById('log-pass').value;
+        if(u === localStorage.getItem('v_user') && p === localStorage.getItem('v_pass')) {
+            localStorage.setItem('active_session', u); user = u; startApp();
+        } else alert("ACCESS DENIED");
+    }
+
+    function startApp() {
+        document.getElementById('auth-gate').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        balance = parseFloat(localStorage.getItem(`${user}_bal`)) || 0;
+        logs = JSON.parse(localStorage.getItem(`${user}_logs`)) || [];
+        extras = JSON.parse(localStorage.getItem(`${user}_extras`)) || [];
+        milestone = JSON.parse(localStorage.getItem(`${user}_ms`)) || null;
+        updateUI();
+    }
+
+    function showPage(page) {
+        document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+        document.getElementById('page-' + page).classList.remove('hidden');
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById('nav-' + page).classList.add('active');
+    }
+
+    function process(type) {
+        const amt = parseFloat(document.getElementById('tx-amt').value);
+        if (isNaN(amt)) return;
+        type === 'add' ? balance += amt : balance -= amt;
+        logs.unshift({ amt: amt.toFixed(2), type, desc: document.getElementById('tx-desc').value.toUpperCase() || 'TX', time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+        document.getElementById('tx-amt').value = ''; document.getElementById('tx-desc').value = '';
+        save(); updateUI();
+    }
+
+    function createMilestone() {
+        const name = document.getElementById('ms-name').value.toUpperCase();
+        const target = parseFloat(document.getElementById('ms-target').value);
+        if(!name || isNaN(target)) return;
+        milestone = { name, target, current: 0, completed: false };
+        save(); updateUI();
+    }
+
+    function contributeMilestone() {
+        const amt = parseFloat(document.getElementById('ms-contribute').value);
+        if(isNaN(amt) || !milestone) return;
+        milestone.current += amt;
+        if(milestone.current >= milestone.target) {
+            milestone.current = milestone.target; milestone.completed = true;
+            alert("GOAL ACHIEVED! 🎉");
+        }
+        document.getElementById('ms-contribute').value = '';
+        save(); updateUI();
+    }
+
+    function resetMilestone() { if(confirm("DELETE GOAL?")) { milestone = null; save(); updateUI(); } }
+
+    function addExtra() {
+        const msg = document.getElementById('extra-msg').value.toUpperCase();
+        if(!msg) return;
+        extras.unshift({ msg, status: document.getElementById('extra-status').value, id: Date.now() });
+        document.getElementById('extra-msg').value = '';
+        save(); updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById('bal-val').innerText = balance.toFixed(2);
+        document.getElementById('ledger').innerHTML = logs.slice(0, 5).map(l => `<div class="log-item"><span>${l.type==='add'?'+':'-'}৳${l.amt} | ${l.desc}</span><span>${l.time}</span></div>`).join('');
+        
+        const msDisplay = document.getElementById('milestone-display');
+        const msSetup = document.getElementById('milestone-setup');
+        if (!milestone) {
+            msSetup.classList.remove('hidden'); msDisplay.innerHTML = '';
+        } else {
+            msSetup.classList.add('hidden');
+            const percent = ((milestone.current / milestone.target) * 100).toFixed(0);
+            msDisplay.innerHTML = `
+                <div class="milestone-card">
+                    <span class="status-tag" style="background:${milestone.completed ? '#27ae60' : '#2980b9'}">${milestone.completed ? 'FINISHED' : 'ACTIVE'}</span>
+                    <div style="font-size:0.9rem; font-weight:900;">${milestone.name}</div>
+                    <div style="font-size:0.6rem; margin-top:5px; color:var(--muted-foreground)">TARGET: ৳${milestone.target.toFixed(2)}</div>
+                    <div class="progress-container"><div class="progress-fill" style="width:${percent}%"></div></div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:bold;"><span>${percent}%</span><span>৳${milestone.current.toFixed(2)} / ৳${milestone.target.toFixed(2)}</span></div>
+                    ${!milestone.completed ? `
+                        <input type="number" id="ms-contribute" placeholder="CONTRIBUTE" style="margin-top:20px;">
+                        <button onclick="contributeMilestone()">ADD MONEY</button>
+                    ` : `<div style="margin-top:20px; color:#27ae60; font-weight:900; text-align:center;">FINISHED! 🎉</div>`}
+                    <p onclick="resetMilestone()" style="font-size:0.5rem; text-align:center; cursor:pointer; margin-top:15px; opacity:0.5;">[ DELETE ]</p>
+                </div>`;
+        }
+        document.getElementById('extras-list').innerHTML = extras.map(e => `<div class="log-item" style="background:var(--muted); padding:10px; margin-bottom:5px; border-radius:5px;"><span>[${e.status}] ${e.msg}</span></div>`).join('');
+    }
+
+    function save() {
+        localStorage.setItem(`${user}_bal`, balance); localStorage.setItem(`${user}_logs`, JSON.stringify(logs));
+        localStorage.setItem(`${user}_extras`, JSON.stringify(extras)); localStorage.setItem(`${user}_ms`, JSON.stringify(milestone));
+    }
+
+    function logout() { localStorage.removeItem('active_session'); location.reload(); }
+    function toggleTheme() { document.body.classList.toggle('dark'); localStorage.setItem('theme', document.body.classList.contains('dark')?'dark':'light'); }
+</script>
+</body>
+</html> 
