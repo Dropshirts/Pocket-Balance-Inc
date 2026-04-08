@@ -25,8 +25,8 @@
         button { background: var(--primary); color: var(--primary-foreground); border: none; padding: 16px; border-radius: var(--radius); font-family: inherit; font-weight: bold; cursor: pointer; width: 100%; }
         
         /* NAVIGATION */
-        nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 420px; background: var(--background); border-top: 1px solid var(--border); display: flex; padding: 15px; gap: 8px; z-index: 100; align-items: center; }
-        nav button { flex: 1; padding: 10px; font-size: 0.6rem; background: var(--muted); color: var(--foreground); }
+        nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 420px; background: var(--background); border-top: 1px solid var(--border); display: flex; padding: 10px; gap: 5px; z-index: 100; align-items: center; }
+        nav button { flex: 1; padding: 8px; font-size: 0.5rem; background: var(--muted); color: var(--foreground); }
         nav button.active { background: var(--primary); color: var(--primary-foreground); }
 
         /* THEME SLIDER */
@@ -34,16 +34,19 @@
         .slider { position: absolute; width: 16px; height: 16px; background: var(--primary); border-radius: 50%; top: 2px; left: 2px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .dark .slider { transform: translateX(22px); }
 
-        /* MILESTONE PROGRESS BAR */
+        /* PROGRESS BAR */
         .progress-container { width: 100%; height: 12px; background: var(--muted); border-radius: 20px; margin: 15px 0; overflow: hidden; border: 1px solid var(--border); }
         .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.8s ease; }
         
-        .milestone-card { background: var(--muted); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 20px; position: relative; }
+        .milestone-card, .decidr-card { background: var(--muted); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 20px; position: relative; }
         .status-tag { font-size: 0.5rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; position: absolute; top: 15px; right: 15px; }
 
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .balance-amount { font-size: 3rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -1px; }
         .log-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.7rem; }
+        
+        /* DECIDR SPECIFIC */
+        .q-label { font-size: 0.6rem; margin-bottom: 5px; display: block; color: var(--muted-foreground); }
     </style>
 </head>
 <body class="dark">
@@ -85,6 +88,25 @@
             <div id="milestone-display"></div>
         </div>
 
+        <div id="page-decidr" class="page hidden">
+            <div class="page-header"><div>THE DECIDR</div></div>
+            <div class="decidr-card">
+                <input type="text" id="decision-task" placeholder="WHAT IS THE DECISION?">
+                
+                <label class="q-label">WILL THIS MATTER IN 1 YEAR?</label>
+                <select id="q-time"><option value="1">YES</option><option value="0">NO</option></select>
+                
+                <label class="q-label">IS IT A 'HELL YES' OR A 'MAYBE'?</label>
+                <select id="q-desire"><option value="1">HELL YES</option><option value="0">MAYBE</option></select>
+                
+                <label class="q-label">DOES THIS HELP YOUR LONG-TERM GOALS?</label>
+                <select id="q-goal"><option value="1">YES</option><option value="0">NO</option></select>
+                
+                <button onclick="runDecidr()">RUN LOGIC ENGINE</button>
+                <div id="decidr-result" style="margin-top:20px; text-align:center; font-weight:900;"></div>
+            </div>
+        </div>
+
         <div id="page-extras" class="page hidden">
             <div class="page-header"><div>EXTRA MEMO</div></div>
             <input type="text" id="extra-msg" placeholder="MESSAGE"><select id="extra-status"><option value="INCOMING">INCOMING</option><option value="DONE">DONE</option></select>
@@ -95,6 +117,7 @@
         <nav>
             <button id="nav-vault" class="active" onclick="showPage('vault')">VAULT</button>
             <button id="nav-milestones" onclick="showPage('milestones')">GOALS</button>
+            <button id="nav-decidr" onclick="showPage('decidr')">DECIDR</button>
             <button id="nav-extras" onclick="showPage('extras')">MEMO</button>
             <div class="switch" onclick="toggleTheme()"><div class="slider"></div></div>
         </nav>
@@ -155,6 +178,20 @@
         logs.unshift({ amt: amt.toFixed(2), type, desc: document.getElementById('tx-desc').value.toUpperCase() || 'TX', time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
         document.getElementById('tx-amt').value = ''; document.getElementById('tx-desc').value = '';
         save(); updateUI();
+    }
+
+    function runDecidr() {
+        const task = document.getElementById('decision-task').value;
+        if(!task) return;
+        const score = parseInt(document.getElementById('q-time').value) + 
+                      parseInt(document.getElementById('q-desire').value) + 
+                      parseInt(document.getElementById('q-goal').value);
+        
+        let result = "";
+        if(score >= 2) result = `<span style="color:#27ae60;">EXECUTE: POSITIVE PROBABILITY</span>`;
+        else result = `<span style="color:#e74c3c;">ABORT: HIGH REGRET PROBABILITY</span>`;
+        
+        document.getElementById('decidr-result').innerHTML = result;
     }
 
     function createMilestone() {
@@ -224,4 +261,4 @@
     function toggleTheme() { document.body.classList.toggle('dark'); localStorage.setItem('theme', document.body.classList.contains('dark')?'dark':'light'); }
 </script>
 </body>
-</html> 
+</html>
