@@ -243,7 +243,7 @@
         const amt = parseFloat(document.getElementById('tx-amt').value);
         if (isNaN(amt)) return;
         type === 'add' ? balance += amt : balance -= amt;
-        logs.unshift({ amt: amt.toFixed(2), type, desc: document.getElementById('tx-desc').value.toUpperCase() || 'TX', time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+        logs.unshift({ amt: amt.toFixed(2), type, desc: document.getElementById('tx-desc').value.toUpperCase() || '৳', time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
         document.getElementById('tx-amt').value = ''; document.getElementById('tx-desc').value = '';
         save(); updateUI();
     }
