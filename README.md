@@ -9,7 +9,7 @@
 
 Pocket Balance is a high-performance web application designed for users who want a sleek, private, and fast way to track their "pocket cash," pending inflows, and long-term savings goals. 
 
-### 🚀 [ACCESS YOUR VAULT](https://ByAnaf.github.io/Pocket-Balance-Inc/)
+### 🚀 [ACCESS YOUR VAULT](https://ByAnaf.github.io/PocketBalance/)
 
 ---
 
