@@ -137,14 +137,14 @@
 
     <div id="main-app" class="hidden">
         <div id="page-vault" class="page">
-            <div class="page-header"><div>VAULT</div><button onclick="logout()" style="width:auto; padding:5px 12px; font-size:0.6rem; background:var(--muted); color:var(--foreground);">LOGOUT</button></div>
+            <div class="page-header"><div>Pocket Balance By Anaf</div><button onclick="logout()" style="width:auto; padding:5px 12px; font-size:0.6rem; background:var(--muted); color:var(--foreground);">LOGOUT</button></div>
             <div style="font-size:0.65rem; color:var(--muted-foreground); font-weight:bold;">AVAILABLE BALANCE</div>
             <div class="balance-amount">৳<span id="bal-val">0.00</span></div>
             <input type="number" id="tx-amt" placeholder="0.00">
             <input type="text" id="tx-desc" placeholder="TRANSACTION NOTE">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <button onclick="process('add')">INFLOW (+)</button>
-                <button onclick="process('sub')" style="background:var(--muted); color:var(--foreground); border:1px solid var(--border);">OUTFLOW (-)</button>
+                <button onclick="process('add')">Balance (+)</button>
+                <button onclick="process('sub')" style="background:var(--muted); color:var(--foreground); border:1px solid var(--border);">Balance (-)</button>
             </div>
             <div id="ledger" style="margin-top:25px;"></div>
         </div>
@@ -160,13 +160,13 @@
         </div>
 
         <div id="page-decidr" class="page hidden">
-            <div class="page-header"><div>DECIDR</div></div>
+            <div class="page-header"><div>DECIDER</div></div>
             <div class="decidr-card">
                 <input type="text" id="decision-task" placeholder="WHAT IS THE DECISION?">
                 <label class="q-label">WILL THIS MATTER IN 1 YEAR?</label>
                 <select id="q-time"><option value="1">YES</option><option value="0">NO</option></select>
-                <label class="q-label">IS IT A 'HELL YES' OR A 'MAYBE'?</label>
-                <select id="q-desire"><option value="1">HELL YES</option><option value="0">MAYBE</option></select>
+                <label class="q-label">IS IT A 'YES' OR A 'MAYBE'?</label>
+                <select id="q-desire"><option value="1">YES</option><option value="0">MAYBE</option></select>
                 <label class="q-label">DOES THIS ALIGN WITH YOUR GOALS?</label>
                 <select id="q-goal"><option value="1">YES</option><option value="0">NO</option></select>
                 <button onclick="runDecidr()">RUN LOGIC ENGINE</button>
@@ -185,7 +185,7 @@
         <nav>
             <button id="nav-vault" class="active" onclick="showPage('vault')">VAULT</button>
             <button id="nav-milestones" onclick="showPage('milestones')">GOALS</button>
-            <button id="nav-decidr" onclick="showPage('decidr')">DECIDR</button>
+            <button id="nav-decidr" onclick="showPage('decidr')">DECIDER</button>
             <button id="nav-extras" onclick="showPage('extras')">MEMO</button>
             <div class="switch" onclick="toggleTheme()"><div class="slider"></div></div>
         </nav>
